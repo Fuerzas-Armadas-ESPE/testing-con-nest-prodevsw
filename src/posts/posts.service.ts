@@ -1,3 +1,4 @@
+//post.service.ts
 import {
   Injectable,
   InternalServerErrorException,

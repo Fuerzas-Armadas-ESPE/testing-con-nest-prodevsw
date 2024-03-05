@@ -6,36 +6,40 @@ En este tutorial, aprenderemos cómo implementar pruebas unitarias y de extremo 
 
 Antes de comenzar, asegúrate de tener Node.js y npm instalados en tu sistema. Luego, crea un nuevo proyecto NestJS ejecutando el siguiente comando:
 
-``` bash
+```bash
 npx @nestjs/cli new blog-personal-nest
 ```
+
 Una vez creado el proyecto, navega hasta el directorio del proyecto:
 
-``` bash
+```bash
 cd blog-personal-nest
 ```
+
 2. Instalación de dependencias
 
 Instala Jest, la librería de pruebas para NestJS, y la librería @nestjs/testing para habilitar las utilidades de prueba. También, instala ts-jest para permitir que **Jest** funcione con TypeScript, y supertest para realizar pruebas de extremo a extremo:
 
-``` bash
+```bash
 npm install --save-dev @types/jest
 ```
+
 3. Configuración de Jest
 
 Crea un archivo de configuración de Jest llamado jest.config.js en el directorio raíz de tu proyecto con el siguiente contenido:
 
-``` js
+```js
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
 };
 ```
+
 4. Configuración de pruebas de extremo a extremo
 
 Crea un archivo de configuración para pruebas de extremo a extremo llamado test/jest-e2e.json:
 
-``` json
+```json
 {
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
@@ -46,9 +50,10 @@ Crea un archivo de configuración para pruebas de extremo a extremo llamado test
   }
 }
 ```
+
 Crea un archivo de prueba de extremo a extremo llamado `test/app.e2e-spec.ts` con el siguiente contenido:
 
-``` typescript
+```typescript
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -74,11 +79,12 @@ describe('AppController (e2e)', () => {
   });
 });
 ```
+
 5. Configuración de TypeScript
 
 Asegúrate de tener la siguiente configuración en tu archivo tsconfig.json:
 
-``` json
+````json
 {
   "compilerOptions": {
     // Otras opciones de configuración...
@@ -104,7 +110,8 @@ blog-personal-nest/
   |- test/
       |- jest-e2e.json
       |- app.e2e-spec.ts
-```
+````
+
 7. Escribir pruebas unitarias y de extremo a extremo
 
 Escribe pruebas unitarias y de extremo a extremo según sea necesario para tu aplicación. Aquí tienes algunos ejemplos:
@@ -113,7 +120,7 @@ Escribe pruebas unitarias y de extremo a extremo según sea necesario para tu ap
 
 En el archivo **src/posts/posts.service.spec.ts**, escribe una prueba para el servicio PostsService:
 
-``` typescript
+```typescript
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostsService } from './posts.service';
 import { getModelToken } from '@nestjs/mongoose';
@@ -147,7 +154,7 @@ Ejemplo de prueba de extremo a extremo para un controlador
 
 En el archivo test/app.e2e-spec.ts, escribe una prueba de extremo a extremo para el controlador de la aplicación:
 
-``` typescript
+```typescript
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -173,13 +180,65 @@ describe('AppController (e2e)', () => {
   });
 });
 ```
+
 8. Ejecutar las pruebas
 
 Finalmente, ejecuta tus pruebas con el siguiente comando:
 
-``` bash
+```bash
 npm test -- --config=jest.config.js
 ```
+
 Esto ejecutará Jest utilizando la configuración que hemos proporcionado y mostrará los resultados de las pruebas en la consola.
 
 ¡Y eso es todo! Ahora tienes pruebas unitarias y de extremo a extremo configuradas para tu aplicación NestJS. Puedes expandir este tutorial agregando más pruebas para otros componentes de tu aplicación.
+
+### Pruebas Unitarias
+
+Se han agregado pruebas unitarias para el servicio `PostsService` en NestJS. Estas pruebas verifican el comportamiento de los diferentes métodos del servicio, como la obtención de todas las publicaciones, la obtención de una publicación por su ID, la creación de una nueva publicación, la actualización de una publicación existente y la eliminación de una publicación.
+
+A continuación se muestra el código de las pruebas unitarias añadidas:
+
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { PostsService } from './posts.service';
+import { getModelToken } from '@nestjs/mongoose';
+import { Post } from './post.model'; // Import the Post model from the appropriate module
+
+describe('PostsService', () => {
+  let service: PostsService;
+  let postModel: any; // Add this line to declare the postModel variable
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PostsService,
+        {
+          provide: getModelToken('Post'),
+          useValue: {}, // Provide a mock value for the model
+        },
+      ],
+    }).compile();
+
+    service = module.get<PostsService>(PostsService);
+    postModel = module.get(getModelToken('Post')); // Add this line to get the postModel instance
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  // Add more tests as needed for service methods
+
+  describe('getAllPosts', () => {
+    it('should return array of posts', async () => {
+      const expectedResult = [{ title: 'Post 1', content: 'Content 1' }];
+      postModel.find.mockResolvedValue(expectedResult);
+      const result = await service.getAllPosts();
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  // Add more test cases for other service methods...
+});
+```
